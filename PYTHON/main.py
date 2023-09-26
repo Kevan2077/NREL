@@ -166,7 +166,7 @@ def optimisation(Input):
 
 if __name__=='__main__':
     from mpi4py import MPI
-    inputFileName = '/scratch/xa1/sw8035/H2hubs/input.txt'
+    inputFileName = os.getcwd()+'/input.txt'
     f = open( inputFileName )    
     lines = f.readlines()
     f.close()    
