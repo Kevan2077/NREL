@@ -8,12 +8,13 @@ from projdirs import optdir
 import numpy as np
 from PACKAGE.component_model import pv_gen, wind_gen
 import os
+import shutil
 
 def make_dzn_file(DT, EL_ETA, BAT_ETA_in, BAT_ETA_out,
                   C_PV, C_WIND, C_EL, C_UG_STORAGE,UG_STORAGE_CAPA_MAX,
                   C_PIPE_STORAGE,PIPE_STORAGE_CAPA_MIN, C_BAT_ENERGY,
                   C_BAT_POWER, CF, PV_REF, PV_REF_POUT, WIND_REF,
-                  WIND_REF_POUT, LOAD):
+                  WIND_REF_POUT, LOAD, random):
 
     # pdb.set_trace()    
     string = """
@@ -56,12 +57,14 @@ def make_dzn_file(DT, EL_ETA, BAT_ETA_in, BAT_ETA_out,
       PIPE_STORAGE_CAPA_MIN, C_BAT_ENERGY,
       C_BAT_POWER,(1-CF/100)*sum(LOAD)*DT*3600, PV_REF, str(PV_REF_POUT), WIND_REF,
       str(WIND_REF_POUT), str(LOAD))
-
-    with open(optdir + "hydrogen_plant_data_%s.dzn"%(str(CF)), "w") as text_file:
+    
+    #filename = optdir + "hydrogen_plant_data_%s.dzn"%(str(CF))
+    file_name_new = optdir + "hydrogen_plant_data_%s_%s.dzn"%(str(CF),random)
+    #shutil.copy(filename,file_name_new)
+    with open(file_name_new, "w") as text_file:
         text_file.write(string)
         
         
-#####################################################################
 def Minizinc(simparams):
     """
     Parameters
@@ -77,11 +80,16 @@ def Minizinc(simparams):
 
     """
     make_dzn_file(**simparams)
-    mzdir = r'C:\\Program Files\\MiniZinc\\'
-    minizinc_data_file_name = "hydrogen_plant_data_%s.dzn"%(str(simparams['CF']))
     
+    #mzdir = parent_directory + os.sep + 'MiniZinc'
+    # I commented out the mzdir command because it is annoyying to refer to the installation dir
+    # in different systems. I think a better way is that we add minizinc to an environment variable 
+    #during the installation
+    
+    minizinc_data_file_name = "hydrogen_plant_data_%s_%s.dzn"%(str(simparams['CF']),simparams['random'])
     from subprocess import check_output
-    output = str(check_output([mzdir + 'minizinc', "--soln-sep", '""',
+    output = str(check_output([#mzdir + 
+                               'minizinc', "--soln-sep", '""',
                                "--search-complete-msg", '""', "--solver",
                                "COIN-BC", optdir + "hydrogen_plant.mzn",
                                optdir + minizinc_data_file_name]))
@@ -106,13 +114,13 @@ def Minizinc(simparams):
     
     return(  RESULTS  )
 
-######################################################################
-def Optimise(load, cf, storage_type, simparams):
+def Optimise(load, cf, storage_type, simparams, random_number,ug_storage_ratio=1):
+    
     pv_ref = 1e3 #(kW)
-    pv_ref_pout = list(np.trunc(100*np.array(pv_gen(pv_ref)))/100)
+    pv_ref_pout = list(np.trunc(100*np.array(pv_gen(pv_ref,random_number)))/100)
     
     wind_ref = 320e3 #(kW)
-    wind_ref_pout = list(np.trunc(100*np.array(wind_gen()))/100)
+    wind_ref_pout = list(np.trunc(100*np.array(wind_gen(random_number)))/100)
     
     initial_ug_capa = 110
     
@@ -121,13 +129,13 @@ def Optimise(load, cf, storage_type, simparams):
                      PV_REF_POUT = pv_ref_pout, #power output from reference PV plant (kW)
                      WIND_REF = wind_ref, #capacity of reference wind farm (kW)
                      WIND_REF_POUT = wind_ref_pout, #power output from the reference wind farm (kW)
-                     C_UG_STORAGE = Cost_hs(initial_ug_capa, storage_type),
+                     C_UG_STORAGE = Cost_hs(initial_ug_capa, storage_type)*ug_storage_ratio,
                      LOAD = [load for i in range(len(pv_ref_pout))], #[kgH2/s] load profile timeseries
-                     CF = cf           #capacity factor
-                     )
+                     CF = cf,           #capacity factor
+                     random = random_number)
  
     
-    print('Calculating for CF=', simparams['CF'])
+    #print('Calculating for CF=', simparams['CF'])
     results = Minizinc(simparams)
     
     if simparams['UG_STORAGE_CAPA_MAX']>0:
@@ -136,15 +144,13 @@ def Optimise(load, cf, storage_type, simparams):
             if abs(new_ug_capa - initial_ug_capa)/np.mean([new_ug_capa,initial_ug_capa]) > 0.05:
                 initial_ug_capa = new_ug_capa
                 print('Refining storage cost; new storage capa=', initial_ug_capa)
-                simparams['C_UG_STORAGE'] = Cost_hs(initial_ug_capa, storage_type)
+                simparams['C_UG_STORAGE'] = Cost_hs(initial_ug_capa, storage_type)*ug_storage_ratio
                 results = Minizinc(simparams)
     
     results.update(CF=simparams['CF'],
                    C_UG_STORAGE=simparams['C_UG_STORAGE'])
     return(results)
-
-######################################################################
-
+    
 def Cost_hs(size,storage_type):
     """
     This function calculates the unit cost of storage as a function of size
