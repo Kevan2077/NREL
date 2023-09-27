@@ -42,8 +42,8 @@ def pv_gen(capacity,random_number):
     pv.execute()
     output = np.array(pv.Outputs.gen)
     #os.remove(file_name_new)
-    if os.path.exists(dir + 'SolarSource_%s.csv'%random_number):
-        os.remove(dir + 'SolarSource_%s.csv'%random_number)
+    #if os.path.exists(dir + 'SolarSource_%s.csv'%random_number):
+    #    os.remove(dir + 'SolarSource_%s.csv'%random_number)
     return(output.tolist())
 
 #################################################################
@@ -74,8 +74,8 @@ def wind_gen(random_number,hub_height=150):
     wind.Turbine.wind_turbine_hub_ht = hub_height
     wind.execute()
     output = np.array(wind.Outputs.gen)
-    if os.path.exists(dir + 'WindSource_%s.srw'%random_number):
-        os.remove(dir + 'WindSource_%s.srw'%random_number)
+    #if os.path.exists(dir + 'WindSource_%s.srw'%random_number):
+    #    os.remove(dir + 'WindSource_%s.srw'%random_number)
     return(output.tolist())
 
 #################################################################

@@ -122,7 +122,7 @@ def optimisation(Input):
         print('Start %s %s!'%(Location,Input))
         output = [pool.apply_async(Optimise, args=(load, CF, storage_type, params,random_number,Input[3]))
                    for load in [5]
-                   for CF in [50,60,70,80,90,100]
+                   for CF in [50]#,60,70,80,90,100]
                    for storage_type in ['Salt Cavern'] 
                    for params in [simparams]]
         
@@ -178,6 +178,14 @@ def optimisation(Input):
     
         RESULTS.to_csv(path_to_file+result_file, index=False)
         
+        # clean up template weather data
+        dir = datadir + os.sep + 'SAM_INPUTS' + os.sep + 'SOLAR' + os.sep 
+        if os.path.exists(dir + 'SolarSource_%s.csv'%random_number):
+            os.remove(dir + 'SolarSource_%s.csv'%random_number)
+            
+        dir = datadir + os.sep + 'SAM_INPUTS' + os.sep + 'WIND' + os.sep 
+        if os.path.exists(dir + 'WindSource_%s.srw'%random_number):
+            os.remove(dir + 'WindSource_%s.srw'%random_number)
 
 if __name__=='__main__':
     #from mpi4py import MPI
