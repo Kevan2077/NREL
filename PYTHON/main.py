@@ -46,6 +46,11 @@ def optimisation(Input):
                      PIPE_STORAGE_CAPA_MIN = 0, #minimum size of linepacking (kg of H2)
                      C_BAT_ENERGY = 196,        #[USD/kWh] unit cost of battery energy storage
                      C_BAT_POWER = 405,        #[USD/kW] unit cost of battery power capacpity
+                     MO_EL = 37.40,    # O&M for electrolyzer ($/kw)
+                     MO_PV = 12.70,    # O&M for PV ($/kw)
+                     MO_WIND = 18.65,    # O&M for wind ($/kw)
+                     MO_UG = 1.03,        # O&M for underground storage ($/kg)
+                     DIS_RATE = 0.08        #discount rate 8%
                      )
     simparams['C_PV'] = simparams['C_PV'] * Input[0]
     simparams['C_WIND'] = simparams['C_WIND'] * Input[1]
