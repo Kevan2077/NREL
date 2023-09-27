@@ -52,9 +52,16 @@ def optimisation(Input):
                      OM_UG = 1.03,        # O&M for underground storage ($/kg)
                      DIS_RATE = 0.08        #discount rate 8%
                      )
-    simparams['C_PV'] = simparams['C_PV'] * Input[0]
-    simparams['C_WIND'] = simparams['C_WIND'] * Input[1]
-    simparams['C_EL'] = simparams['C_EL'] * Input[2]
+    simparams['C_PV'] = Input[0]
+    simparams['C_WIND'] = Input[1]
+    simparams['C_EL'] = Input[2]
+    simparams['OM_PV'] = Input[4]
+    simparams['OM_WIND'] = Input[5]
+    simparams['OM_EL'] = Input[6]
+    simparams['OM_UG'] = simparams['OM_UG'] * Input[3]
+    
+    #print (simparams)
+    
     # # for 2030
     # simparams = dict(EL_ETA = 0.70,       #efficiency of electrolyser
     #                  BAT_ETA_in = 0.95,   #charging efficiency of battery
@@ -101,9 +108,7 @@ def optimisation(Input):
                    'Pinjara 1', 'Pinjara 2', 'Pinjara 3', 'Pinjara 4',
                    'Upper Spencer Gulf 1', 'Upper Spencer Gulf 2', 'Upper Spencer Gulf 3', 'Upper Spencer Gulf 4',
                    'Gladstone 1', 'Gladstone 2', 'Gladstone 3']:
-        
-    #for Location in ['Pilbara 1']:
-        
+                
         random_number = random.random()
         #Update the weather data files
         SolarResource(Location,random_number)
@@ -118,7 +123,7 @@ def optimisation(Input):
         output = [pool.apply_async(Optimise, args=(load, CF, storage_type, params,random_number,Input[3]))
                    for load in [5]
                    for CF in [50,60,70,80,90,100]
-                   for storage_type in ['Lined Rock'] 
+                   for storage_type in ['Salt Cavern'] 
                    for params in [simparams]]
         
         pool.close()
@@ -131,7 +136,9 @@ def optimisation(Input):
 
         print('Completed %s %s!'%(Location,Input))
         
-        RESULTS = pd.DataFrame(columns=['cf','capex[USD]','lcoh[USD/kg]','fom[USD]','hy[kg]','pv_capacity[kW]',
+        RESULTS = pd.DataFrame(columns=['cf','capex[USD]','lcoh[USD/kg]','FOM_PV[USD]',
+                                        'FOM_WIND[USD]','FOM_EL[USD]','FOM_UG[USD]',
+                                        'H_total[kg]','pv_capacity[kW]',
                                         'wind_capacity[kW]','el_capacity[kW]',
                                         'ug_capcaity[kgH2]','pipe_storage_capacity[kgH2]',
                                         'bat_e_capacity[kWh]','bat_p_capacity[kW]',
@@ -143,8 +150,11 @@ def optimisation(Input):
             RESULTS = pd.concat([RESULTS, pd.DataFrame([{'cf': results['CF'],
                                 'capex[USD]': results['CAPEX'][0],
                                 'lcoh[USD/kg]': results['lcoh'][0],
-                                'fom[USD]':results['fom'][0],
-                                'hy[kg]':results['hy'][0],
+                                'FOM_PV[USD]':results['FOM_PV'][0],
+                                'FOM_WIND[USD]':results['FOM_WIND'][0],
+                                'FOM_EL[USD]':results['FOM_EL'][0],
+                                'FOM_UG[USD]':results['FOM_UG'][0],
+                                'H_total[kg]':results['H_total'][0],
                                 'pv_capacity[kW]': results['pv_max'][0],
                                 'wind_capacity[kW]': results['wind_max'][0],
                                 'el_capacity[kW]': results['el_max'][0],
@@ -164,13 +174,13 @@ def optimisation(Input):
         #RESULTS
         parent_directory = os.path.dirname(os.getcwd())
         path_to_file = parent_directory + os.sep + 'DATA' + os.sep + 'OPT_OUTPUTS' + os.sep 
-        result_file = 'results(%s-UG_windlab)_2020_%s_%s_%s_%s.csv'%(Location,int(Input[0]),int(Input[1]),int(Input[2]),int(Input[3]))
+        result_file = 'results(%s-UG_windlab)_2020_%s_%s_%s_%s.csv'%(Location,round(Input[0],2),round(Input[1],2),round(Input[2],2),round(Input[3],2))
     
         RESULTS.to_csv(path_to_file+result_file, index=False)
         
 
 if __name__=='__main__':
-    from mpi4py import MPI
+    #from mpi4py import MPI
     inputFileName = os.getcwd()+'/input.txt'
     f = open( inputFileName )    
     lines = f.readlines()
@@ -181,10 +191,14 @@ if __name__=='__main__':
         if cleanLine[0] == "P" or cleanLine[0] == "#": 
             continue
         splitReturn = splitReturn = cleanLine.split(",")
-        Input = np.append(Input,[float(splitReturn[0]),float(splitReturn[1]),float(splitReturn[2]),float(splitReturn[3])])
-    Input = Input.reshape(int(len(Input)/4),4)
+        Input = np.append(Input,[float(splitReturn[0]),float(splitReturn[1]),float(splitReturn[2]),float(splitReturn[3]),
+                                 float(splitReturn[4]),float(splitReturn[5]),float(splitReturn[6])])
+    Input = Input.reshape(int(len(Input)/7),7)
+    optimisation(Input[0])
+    '''
     for i in range(len(Input)):
         comm = MPI.COMM_WORLD
         rank = comm.Get_rank()
         if rank == i:
             optimisation(Input[i])
+    '''

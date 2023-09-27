@@ -122,7 +122,8 @@ def Minizinc(simparams):
     
     #remove the minizinc data file after running the minizinc model
     
-    mzfile = optdir + minizinc_data_file_name
+    mzfile = optdir + os.sep + minizinc_data_file_name
+    print (mzfile)
     if os.path.exists(mzfile):
         os.remove(mzfile)
     
