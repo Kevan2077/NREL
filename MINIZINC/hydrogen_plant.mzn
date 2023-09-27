@@ -1,16 +1,10 @@
 % Use this editor as a MiniZinc scratch book
 int: N;
 int: n_project = 20;    %project length
-%int: n_el_m = 5;    %Maintenance interval for electrolyser
-%int: n_PV_m = 10;    %Maintenance interval for PV facilities
-%int: n_wind_m = 10;    %Maintenance interval for wind facilities
 
 set of int: tint = 1..N;     %number of intervals
 set of int: tsamp = 1..N+1;    %number of sample points
 set of int: N_project = 1..n_project;    %number of project year 
-%set of int: N_el_m = {year_el | year_el in N_project where year_el mod n_el_m = 0}; % set of years to maintain the electroylyser
-%set of int: N_PV_m = {year_PV | year_PV in N_project where year_PV mod n_PV_m = 0}; % set years to maintain the PV facilities
-%set of int: N_wind_m = {year_wind | year_wind in N_project where year_wind mod n_wind_m = 0}; % set years to maintain the PV facilities
 
 float: DT;      %time difference between sample points (also, interval length) (s)
 float: EL_ETA;  %conversion efficiency of the electrolyser (kgH/s/kW)
@@ -29,13 +23,11 @@ float: RES_H_CAPA;       %virtual hydrogen reserve for reduced capacity factor (
 float: PV_REF;    %power capacity of the reference PV plant (kW)
 float: WIND_REF;    %power capacity of the reference wind plant (kW)
 
-%%%% These ones should be inputs defined in the dzn file
-
-float: DIS_RATE = 0.08;    %discount rate 8%
-float: C_EL_MO = 37.40;    % O&M for electrolyzer ($/kw)
-float: C_PV_MO = 12.70;    % O&M for electrolyzer ($/kw)
-float: C_WIND_MO = 18.65;    % O&M for electrolyzer ($/kw)
-float: C_UG_MO = 1.03;     % O&M for underground hydrogen storage
+float: DIS_RATE;    %discount rate 8%
+float: OM_EL;    % O&M for electrolyzer ($/kw)
+float: OM_PV;    % O&M for PV ($/kw)
+float: OM_WIND;    % O&M for wind ($/kw)
+float: OM_UG;     % O&M for underground hydrogen storage
 
 array[tint] of float: LOAD; %load timeseries (kg of H per hour)
 array[tint] of var float: PV_REF_POUT;    %power output from the reference PV plant (kW)
@@ -79,21 +71,18 @@ var float: FOM_EL;
 var float: FOM_UG;
 var float: annuity_factor;
 
-%lcoh = (capex + fom)/hy;
+
 capex = C_PV * pv_max + C_WIND * wind_max + C_EL * el_max + C_UG_STORAGE * ug_storage_capa + C_PIPE_STORAGE * pipe_storage_capa + C_BAT_ENERGY * bat_e_capa + C_BAT_POWER * bat_p_max;
 
-%fom = (sum(year_el in N_el_m) (C_EL_MO / pow(1.0 + DIS_RATE, year_el)) * el_max 
- %       + sum(year_PV in N_PV_m) (C_PV_MO/pow(1.0 + DIS_RATE, year_PV)) * pv_max 
-  %      + sum(year_wind in N_wind_m) (C_WIND_MO/pow(1.0 + DIS_RATE, year_wind)) * wind_max);
 
 lcoh = (capex + FOM_PV + FOM_WIND + FOM_EL + FOM_UG)/H_total;
 
 annuity_factor =  ( (1-pow(1+DIS_RATE , - n_project)) / DIS_RATE );
 
-FOM_PV = pv_max * C_PV_MO * annuity_factor;
-FOM_WIND = wind_max * C_WIND_MO * annuity_factor; 
-FOM_EL = el_max * C_EL_MO * annuity_factor; 
-FOM_UG = ug_storage_capa * C_UG_MO * annuity_factor;
+FOM_PV = pv_max * OM_PV * annuity_factor;
+FOM_WIND = wind_max * OM_WIND * annuity_factor; 
+FOM_EL = el_max * OM_EL * annuity_factor; 
+FOM_UG = ug_storage_capa * OM_UG * annuity_factor;
 
 H_total = n_project * ( sum(i in 1..N)(LOAD[i]*3600) - RES_H_CAPA);
 
