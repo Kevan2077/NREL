@@ -12,10 +12,14 @@ import shutil
 
 def make_dzn_file(DT, EL_ETA, BAT_ETA_in, BAT_ETA_out,
                   C_PV, C_WIND, C_EL, C_UG_STORAGE,UG_STORAGE_CAPA_MAX,
-                  C_PIPE_STORAGE,PIPE_STORAGE_CAPA_MIN, C_BAT_ENERGY,
-                  C_BAT_POWER, CF, PV_REF, PV_REF_POUT, WIND_REF,
-                  WIND_REF_POUT, LOAD, random):
+                  C_PIPE_STORAGE,  
+                  PIPE_STORAGE_CAPA_MIN, C_BAT_ENERGY,
+                  C_BAT_POWER,
+                  OM_PV, OM_WIND, OM_EL, OM_UG,
+                  CF, PV_REF, PV_REF_POUT, WIND_REF,
+                  WIND_REF_POUT, LOAD, DIS_RATE, random):
 
+                      
     # pdb.set_trace()    
     string = """
     N = %i;
@@ -36,6 +40,11 @@ def make_dzn_file(DT, EL_ETA, BAT_ETA_in, BAT_ETA_out,
     
     C_BAT_ENERGY = %.2f;   %% unit cost of electrochemical battery energy ($/kWh)
     C_BAT_POWER = %.2f;   %% unit cost of electrochemical battery power ($/kWh)
+
+    OM_PV = %.2f;    %% Annual O&M cost of PV ($/kW)
+    OM_WIND = %.2f;  %% Annual O&M cost of wind ($/kW)
+    OM_EL = %.2f;    %% Annual O&M cost of electrolyser ($/kW)
+    OM_UG = %.2f;    %% %% Annual O&M cost of underground storage ($/kg)
     
     RES_H_CAPA = %.2f;       %% reserved hydrogen for lowered capcaity factor
     
@@ -51,12 +60,18 @@ def make_dzn_file(DT, EL_ETA, BAT_ETA_in, BAT_ETA_out,
     WIND_REF_POUT = %s;  
     
     %% load timeseries (kgH/s)                             
-    LOAD = %s;                              
+    LOAD = %s;
+    
+    %% discount rate in absolute value not in percentage
+    DIS_RATE = %s;
+
+    
     """ %(len(LOAD), DT, EL_ETA, BAT_ETA_in, BAT_ETA_out,
-      C_PV, C_WIND, C_EL, C_UG_STORAGE, UG_STORAGE_CAPA_MAX, C_PIPE_STORAGE,
-      PIPE_STORAGE_CAPA_MIN, C_BAT_ENERGY,
-      C_BAT_POWER,(1-CF/100)*sum(LOAD)*DT*3600, PV_REF, str(PV_REF_POUT), WIND_REF,
-      str(WIND_REF_POUT), str(LOAD))
+          C_PV, C_WIND, C_EL, C_UG_STORAGE, UG_STORAGE_CAPA_MAX, C_PIPE_STORAGE,
+          PIPE_STORAGE_CAPA_MIN, C_BAT_ENERGY,
+          C_BAT_POWER, OM_PV, OM_WIND, OM_EL, OM_UG,
+          (1-CF/100)*sum(LOAD)*DT*3600, PV_REF, str(PV_REF_POUT), WIND_REF,
+          str(WIND_REF_POUT), str(LOAD), DIS_RATE  )
     
     #filename = optdir + "hydrogen_plant_data_%s.dzn"%(str(CF))
     file_name_new = optdir + "hydrogen_plant_data_%s_%s.dzn"%(str(CF),random)
