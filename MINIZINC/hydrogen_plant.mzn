@@ -63,28 +63,33 @@ array[tsamp] of var float: bat_e;  %electrical energy stored in the battery (kWh
 
 var float: capex;
 %var float: fom;
-var float: H_total;
-var float: lcoh; % LCOH
-var float: FOM_PV;
-var float: FOM_WIND;
-var float: FOM_EL;
-var float: FOM_UG;
-var float: annuity_factor;
+var float: H_total; %annual hydrogen generation kg/year
+var float: lcoh; % LCOH in USD/kg
+var float: FOM_PV; %USD/kW.year
+var float: FOM_WIND; %USD/kW.year
+var float: FOM_EL; %USD/kW.year
+var float: FOM_UG; %USD/kg.year
+%var float: annuity_factor;
+var float: crf; %capital recovery factor
 
 
 capex = C_PV * pv_max + C_WIND * wind_max + C_EL * el_max + C_UG_STORAGE * ug_storage_capa + C_PIPE_STORAGE * pipe_storage_capa + C_BAT_ENERGY * bat_e_capa + C_BAT_POWER * bat_p_max;
 
 
-lcoh = (capex + FOM_PV + FOM_WIND + FOM_EL + FOM_UG)/H_total;
+%lcoh = (capex + FOM_PV + FOM_WIND + FOM_EL + FOM_UG)/H_total;
 
-annuity_factor =  ( (1-pow(1+DIS_RATE , - n_project)) / DIS_RATE );
+%annuity_factor =  ( (1-pow(1+DIS_RATE , - n_project)) / DIS_RATE );
 
-FOM_PV = pv_max * OM_PV * annuity_factor;
-FOM_WIND = wind_max * OM_WIND * annuity_factor; 
-FOM_EL = el_max * OM_EL * annuity_factor; 
-FOM_UG = ug_storage_capa * OM_UG * annuity_factor;
+crf = DIS_RATE * pow(1+DIS_RATE , n_project)/ ( pow(1+DIS_RATE , n_project) -1);
 
-H_total = n_project * ( sum(i in 1..N)(LOAD[i]*3600) - RES_H_CAPA);
+lcoh = (crf * capex + FOM_PV + FOM_WIND + FOM_EL + FOM_UG)/H_total;
+
+FOM_PV = pv_max * OM_PV;  %* annuity_factor;
+FOM_WIND = wind_max * OM_WIND;  % * annuity_factor; 
+FOM_EL = el_max * OM_EL;  % * annuity_factor; 
+FOM_UG = ug_storage_capa * OM_UG;  % * annuity_factor;
+
+H_total = sum(i in 1..N)(LOAD[i]*3600) - RES_H_CAPA;
 
 
 %=== CONSTRAINTS ===
