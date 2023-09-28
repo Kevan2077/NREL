@@ -50,7 +50,7 @@ def optimisation(Input):
                      OM_PV = 12.70,    # O&M for PV ($/kw)
                      OM_WIND = 18.65,    # O&M for wind ($/kw)
                      OM_UG = 1.03,        # O&M for underground storage ($/kg)
-                     DIS_RATE = 0.08        #discount rate 8%
+                     DIS_RATE = 0.06        #discount rate 8%
                      )
     simparams['C_PV'] = Input[0]
     simparams['C_WIND'] = Input[1]
@@ -122,7 +122,7 @@ def optimisation(Input):
         print('Start %s %s!'%(Location,Input))
         output = [pool.apply_async(Optimise, args=(load, CF, storage_type, params,random_number,Input[3]))
                    for load in [5]
-                   for CF in [50]#,60,70,80,90,100]
+                   for CF in [100]#,60,70,80,90,100]
                    for storage_type in ['Lined Rock'] 
                    for params in [simparams]]
         
@@ -202,7 +202,7 @@ if __name__=='__main__':
         Input = np.append(Input,[float(splitReturn[0]),float(splitReturn[1]),float(splitReturn[2]),float(splitReturn[3]),
                                  float(splitReturn[4]),float(splitReturn[5]),float(splitReturn[6])])
     Input = Input.reshape(int(len(Input)/7),7)
-    #optimisation(Input[0])
+    optimisation(Input[0])
     '''
     for i in range(len(Input)):
         comm = MPI.COMM_WORLD

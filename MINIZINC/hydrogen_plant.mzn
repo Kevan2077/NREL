@@ -1,6 +1,6 @@
 % Use this editor as a MiniZinc scratch book
 int: N;
-int: n_project = 20;    %project length
+int: n_project = 25;    %project length
 
 set of int: tint = 1..N;     %number of intervals
 set of int: tsamp = 1..N+1;    %number of sample points
@@ -162,7 +162,7 @@ constraint forall(  i in tint  )(  res_hout[i] <= LOAD[i]  );
 
 
 
-solve minimize lcoh;
+solve minimize capex;
 
 output  ["!"] ++
         ["N="] ++ [show(N)] ++ [";"] ++
