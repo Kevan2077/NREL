@@ -41,7 +41,7 @@ def optimisation(Input):
                      C_PV = 1122.7,          #[USD/kW] unit cost of PV
                      C_WIND = 1455,           #[USD/kW] unit cost of Wind
                      C_EL = 1067,          #[USD/W] unit cost of electrolyser
-                     UG_STORAGE_CAPA_MAX = 1e10,   #maximum available salt caevern size (kg of H2)
+                     UG_STORAGE_CAPA_MAX = 1e11,   #maximum available salt caevern size (kg of H2)
                      C_PIPE_STORAGE = 516, #unit cost of line packing (USD/kg of H2)
                      PIPE_STORAGE_CAPA_MIN = 0, #minimum size of linepacking (kg of H2)
                      C_BAT_ENERGY = 196,        #[USD/kWh] unit cost of battery energy storage
@@ -122,8 +122,8 @@ def optimisation(Input):
         print('Start %s %s!'%(Location,Input))
         output = [pool.apply_async(Optimise, args=(load, CF, storage_type, params,random_number,Input[3]))
                    for load in [5]
-                   for CF in [50]#,60,70,80,90,100]
-                   for storage_type in ['Salt Cavern'] 
+                   for CF in [50,60,70,80,90,100]
+                   for storage_type in ['Lined Rock'] 
                    for params in [simparams]]
         
         pool.close()
