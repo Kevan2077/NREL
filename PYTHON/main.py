@@ -104,10 +104,10 @@ def optimisation(Input):
     
     import multiprocessing as mp
     
-    for Location in ['Pilbara 2', 'Pilbara 3', 'Pilbara 4', 'Burnie 1', 'Burnie 2', 'Burnie 3', 'Burnie 4',
-                   'Pinjara 1', 'Pinjara 2', 'Pinjara 3', 'Pinjara 4',
-                   'Upper Spencer Gulf 1', 'Upper Spencer Gulf 2', 'Upper Spencer Gulf 3', 'Upper Spencer Gulf 4',
-                   'Gladstone 1', 'Gladstone 2', 'Gladstone 3']:
+    for Location in ['Pilbara 2']:#, 'Pilbara 3', 'Pilbara 4', 'Burnie 1', 'Burnie 2', 'Burnie 3', 'Burnie 4',
+                   #'Pinjara 1', 'Pinjara 2', 'Pinjara 3', 'Pinjara 4',
+                   #'Upper Spencer Gulf 1', 'Upper Spencer Gulf 2', 'Upper Spencer Gulf 3', 'Upper Spencer Gulf 4',
+                   #'Gladstone 1', 'Gladstone 2', 'Gladstone 3']:
                 
         random_number = random.random()
         #Update the weather data files
@@ -122,7 +122,7 @@ def optimisation(Input):
         print('Start %s %s!'%(Location,Input))
         output = [pool.apply_async(Optimise, args=(load, CF, storage_type, params,random_number,Input[3]))
                    for load in [5]
-                   for CF in [50,60,70,80,90,100]
+                   for CF in [50]#,60,70,80,90,100]
                    for storage_type in ['Lined Rock'] 
                    for params in [simparams]]
         
@@ -202,7 +202,7 @@ if __name__=='__main__':
         Input = np.append(Input,[float(splitReturn[0]),float(splitReturn[1]),float(splitReturn[2]),float(splitReturn[3]),
                                  float(splitReturn[4]),float(splitReturn[5]),float(splitReturn[6])])
     Input = Input.reshape(int(len(Input)/7),7)
-    optimisation(Input[0])
+    #optimisation(Input[0])
     '''
     for i in range(len(Input)):
         comm = MPI.COMM_WORLD
