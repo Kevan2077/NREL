@@ -24,7 +24,7 @@ def update_resource_data():
     # # WindSource(Location)
     WindSource_windlab(Location)
     
-def optimisation(Input):
+def optimisation(Input,simul_year = 2020):
     # create a dictionary that contains the inputs for optimisation.
     #these inputs are used by make_dzn_file function to create an input text file called hydrogen_plant_data.dzn.                 
     
@@ -33,61 +33,65 @@ def optimisation(Input):
     # Ardent UG storage: 110-340 USD/kgH2
     # vessel storage: 1000 USD/kgH2
     
-    
+    if simul_year == 2020:
     #for 2020
     
-    simparams = dict(EL_ETA = 0.70,       #efficiency of electrolyser
-                     BAT_ETA_in = 0.95,   #charging efficiency of battery
-                     BAT_ETA_out = 0.95,  #discharg efficiency of battery
-                     C_PV = 1122.7,          #[USD/kW] unit cost of PV
-                     C_WIND = 1455,           #[USD/kW] unit cost of Wind
-                     C_EL = 1067,          #[USD/W] unit cost of electrolyser
-                     UG_STORAGE_CAPA_MAX = 1e11,   #maximum available salt caevern size (kg of H2)
-                     C_PIPE_STORAGE = 516, #unit cost of line packing (USD/kg of H2)
-                     PIPE_STORAGE_CAPA_MIN = 0, #minimum size of linepacking (kg of H2)
-                     C_BAT_ENERGY = 196,        #[USD/kWh] unit cost of battery energy storage
-                     C_BAT_POWER = 405,        #[USD/kW] unit cost of battery power capacpity
-                     OM_EL = 37.40,    # O&M for electrolyzer ($/kw)
-                     OM_PV = 12.70,    # O&M for PV ($/kw)
-                     OM_WIND = 18.65,    # O&M for wind ($/kw)
-                     OM_UG = 1.03,        # O&M for underground storage ($/kg)
-                     DIS_RATE = 0.06        #discount rate 8%
-                     )
+        simparams = dict(EL_ETA = 0.70,       #efficiency of electrolyser
+                         BAT_ETA_in = 0.95,   #charging efficiency of battery
+                         BAT_ETA_out = 0.95,  #discharg efficiency of battery
+                         C_PV = 1122.7,          #[USD/kW] unit cost of PV
+                         C_WIND = 1455,           #[USD/kW] unit cost of Wind
+                         C_EL = 1067,          #[USD/W] unit cost of electrolyser
+                         UG_STORAGE_CAPA_MAX = 1e11,   #maximum available salt caevern size (kg of H2)
+                         C_PIPE_STORAGE = 516, #unit cost of line packing (USD/kg of H2)
+                         PIPE_STORAGE_CAPA_MIN = 0, #minimum size of linepacking (kg of H2)
+                         C_BAT_ENERGY = 196,        #[USD/kWh] unit cost of battery energy storage
+                         C_BAT_POWER = 405,        #[USD/kW] unit cost of battery power capacpity
+                         OM_EL = 37.40,    # O&M for electrolyzer ($/kw)
+                         OM_PV = 12.70,    # O&M for PV ($/kw)
+                         OM_WIND = 18.65,    # O&M for wind ($/kw)
+                         OM_UG = 1.03,        # O&M for underground storage ($/kg)
+                         DIS_RATE = 0.06        #discount rate 8%
+                         )
+    elif simul_year == 2030:
+        # for 2030
+        simparams = dict(EL_ETA = 0.70,       #efficiency of electrolyser
+                          BAT_ETA_in = 0.95,   #charging efficiency of battery
+                          BAT_ETA_out = 0.95,  #discharg efficiency of battery
+                          C_PV = 696,          #[USD/kW] unit cost of PV
+                          C_WIND = 1390,           #[USD/kW] unit cost of Wind
+                          C_EL = 385,          #[USD/W] unit cost of electrolyser
+                          UG_STORAGE_CAPA_MAX = 1e11,   #maximum available salt caevern size (kg of H2)
+                          C_PIPE_STORAGE = 1000, #unit cost of line packing (USD/kg of H2)
+                          PIPE_STORAGE_CAPA_MIN = 0, #minimum size of linepacking (kg of H2)
+                          C_BAT_ENERGY = 164,        #[USD/kWh] unit cost of battery energy storage
+                          C_BAT_POWER = 338,        #[USD/kW] unit cost of battery power capacpity
+                          OM_EL = 13.475,    # O&M for electrolyzer ($/kw)
+                          OM_PV = 12.70,    # O&M for PV ($/kw)
+                          OM_WIND = 18.65,    # O&M for wind ($/kw)
+                          OM_UG = 1.03,        # O&M for underground storage ($/kg)
+                          DIS_RATE = 0.06        #discount rate 8%
+                          ) 
+    elif simul_year == 2050:
+        # for 2050
+        simparams = dict(EL_ETA = 0.70,       #efficiency of electrolyser
+                        BAT_ETA_in = 0.95,   #charging efficiency of battery
+                        BAT_ETA_out = 0.95,  #discharg efficiency of battery
+                        C_PV = 465,          #[USD/kW] unit cost of PV
+                        C_WIND = 1323,           #[USD/kW] unit cost of Wind
+                        C_EL = 295,          #[USD/W] unit cost of electrolyser
+                        UG_STORAGE_CAPA_MAX = 1e11,   #maximum available salt caevern size (kg of H2)
+                        C_PIPE_STORAGE = 1000, #unit cost of line packing (USD/kg of H2)
+                        PIPE_STORAGE_CAPA_MIN = 0, #minimum size of linepacking (kg of H2)
+                        C_BAT_ENERGY = 131,        #[USD/kWh] unit cost of battery energy storage
+                        C_BAT_POWER = 270,        #[USD/kW] unit cost of battery power capacpity
+                        OM_EL = 10.325,    # O&M for electrolyzer ($/kw)
+                        OM_PV = 12.70,    # O&M for PV ($/kw)
+                        OM_WIND = 18.65,    # O&M for wind ($/kw)
+                        OM_UG = 1.03,        # O&M for underground storage ($/kg)
+                        DIS_RATE = 0.06        #discount rate 8%
+                        ) 
     
-    #print (simparams)
-    '''
-    # for 2030
-    simparams = dict(EL_ETA = 0.70,       #efficiency of electrolyser
-                      BAT_ETA_in = 0.95,   #charging efficiency of battery
-                      BAT_ETA_out = 0.95,  #discharg efficiency of battery
-                      C_PV = 696,          #[USD/kW] unit cost of PV
-                      C_WIND = 1390,           #[USD/kW] unit cost of Wind
-                      C_EL = 385,          #[USD/W] unit cost of electrolyser
-                      UG_STORAGE_CAPA_MAX = 0,   #maximum available salt caevern size (kg of H2)
-                      C_PIPE_STORAGE = 1000, #unit cost of line packing (USD/kg of H2)
-                      PIPE_STORAGE_CAPA_MIN = 0, #minimum size of linepacking (kg of H2)
-                      C_BAT_ENERGY = 164,        #[USD/kWh] unit cost of battery energy storage
-                      C_BAT_POWER = 338,        #[USD/kW] unit cost of battery power capacpity
-                      OM_EL = 13.475,    # O&M for electrolyzer ($/kw)
-                      OM_PV = 12.70,    # O&M for PV ($/kw)
-                      OM_WIND = 18.65,    # O&M for wind ($/kw)
-                      OM_UG = 1.03,        # O&M for underground storage ($/kg)
-                      DIS_RATE = 0.06        #discount rate 8%
-                      ) 
-    '''
-    # # for 2050
-    # simparams = dict(EL_ETA = 0.70,       #efficiency of electrolyser
-    #                  BAT_ETA_in = 0.95,   #charging efficiency of battery
-    #                  BAT_ETA_out = 0.95,  #discharg efficiency of battery
-    #                  C_PV = 465,          #[USD/kW] unit cost of PV
-    #                  C_WIND = 1323,           #[USD/kW] unit cost of Wind
-    #                  C_EL = 295,          #[USD/W] unit cost of electrolyser
-    #                  UG_STORAGE_CAPA_MAX = 0,   #maximum available salt caevern size (kg of H2)
-    #                  C_PIPE_STORAGE = 1000, #unit cost of line packing (USD/kg of H2)
-    #                  PIPE_STORAGE_CAPA_MIN = 0, #minimum size of linepacking (kg of H2)
-    #                  C_BAT_ENERGY = 131,        #[USD/kWh] unit cost of battery energy storage
-    #                  C_BAT_POWER = 270,        #[USD/kW] unit cost of battery power capacpity
-    #                  ) 
     
     simparams['C_PV'] = Input[0]
     simparams['C_WIND'] = Input[1]
@@ -110,10 +114,10 @@ def optimisation(Input):
     
     import multiprocessing as mp
     
-    for Location in ['Pilbara 2']:#, 'Pilbara 3', 'Pilbara 4', 'Burnie 1', 'Burnie 2', 'Burnie 3', 'Burnie 4',
-                   #'Pinjara 1', 'Pinjara 2', 'Pinjara 3', 'Pinjara 4',
-                   #'Upper Spencer Gulf 1', 'Upper Spencer Gulf 2', 'Upper Spencer Gulf 3', 'Upper Spencer Gulf 4',
-                   #'Gladstone 1', 'Gladstone 2', 'Gladstone 3']:
+    for Location in ['Pilbara 2', 'Pilbara 3', 'Pilbara 4', 'Burnie 1', 'Burnie 2', 'Burnie 3', 'Burnie 4',
+                   'Pinjara 1', 'Pinjara 2', 'Pinjara 3', 'Pinjara 4',
+                   'Upper Spencer Gulf 1', 'Upper Spencer Gulf 2', 'Upper Spencer Gulf 3', 'Upper Spencer Gulf 4',
+                   'Gladstone 1', 'Gladstone 2', 'Gladstone 3']:
                 
         random_number = random.random()
         #Update the weather data files
@@ -128,7 +132,7 @@ def optimisation(Input):
         print('Start %s %s!'%(Location,Input))
         output = [pool.apply_async(Optimise, args=(load, CF, storage_type, params,random_number,Input[3]))
                    for load in [5]
-                   for CF in [100]#50,60,70,80,90,100]
+                   for CF in [50,60,70,80,90,100]
                    for storage_type in ['Lined Rock'] 
                    for params in [simparams]]
         
@@ -180,7 +184,7 @@ def optimisation(Input):
         #RESULTS
         parent_directory = os.path.dirname(os.getcwd())
         path_to_file = parent_directory + os.sep + 'DATA' + os.sep + 'OPT_OUTPUTS' + os.sep 
-        result_file = 'results(%s-UG_windlab)_2020_%s_%s_%s_%s-capex.csv'%(Location,round(Input[0],2),round(Input[1],2),round(Input[2],2),round(Input[3],2))
+        result_file = 'results(%s-UG_windlab)_%s_%s_%s_%s_%s-lcoh.csv'%(Location,int(simul_year),round(Input[0],2),round(Input[1],2),round(Input[2],2),round(Input[3],2))
     
         RESULTS.to_csv(path_to_file+result_file, index=False)
         
@@ -195,7 +199,8 @@ def optimisation(Input):
 
 if __name__=='__main__':
     #from mpi4py import MPI
-    inputFileName = os.getcwd()+'/input.txt'
+    simul_year = 2050
+    inputFileName = os.getcwd()+'/input-%s.txt'%simul_year
     f = open( inputFileName )    
     lines = f.readlines()
     f.close()    
@@ -208,11 +213,13 @@ if __name__=='__main__':
         Input = np.append(Input,[float(splitReturn[0]),float(splitReturn[1]),float(splitReturn[2]),float(splitReturn[3]),
                                  float(splitReturn[4]),float(splitReturn[5]),float(splitReturn[6])])
     Input = Input.reshape(int(len(Input)/7),7)
-    optimisation(Input[0])
+    #Input = Input[:27]
+    optimisation(Input[0],simul_year)
+    
     '''
     for i in range(len(Input)):
         comm = MPI.COMM_WORLD
         rank = comm.Get_rank()
         if rank == i:
-            optimisation(Input[i])
+            optimisation(Input[i],simul_year)
     '''
