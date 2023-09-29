@@ -35,6 +35,7 @@ def optimisation(Input):
     
     
     #for 2020
+    
     simparams = dict(EL_ETA = 0.70,       #efficiency of electrolyser
                      BAT_ETA_in = 0.95,   #charging efficiency of battery
                      BAT_ETA_out = 0.95,  #discharg efficiency of battery
@@ -52,30 +53,28 @@ def optimisation(Input):
                      OM_UG = 1.03,        # O&M for underground storage ($/kg)
                      DIS_RATE = 0.06        #discount rate 8%
                      )
-    simparams['C_PV'] = Input[0]
-    simparams['C_WIND'] = Input[1]
-    simparams['C_EL'] = Input[2]
-    simparams['OM_PV'] = Input[4]
-    simparams['OM_WIND'] = Input[5]
-    simparams['OM_EL'] = Input[6]
-    simparams['OM_UG'] = simparams['OM_UG'] * Input[3]
     
     #print (simparams)
-    
-    # # for 2030
-    # simparams = dict(EL_ETA = 0.70,       #efficiency of electrolyser
-    #                  BAT_ETA_in = 0.95,   #charging efficiency of battery
-    #                  BAT_ETA_out = 0.95,  #discharg efficiency of battery
-    #                  C_PV = 696,          #[USD/kW] unit cost of PV
-    #                  C_WIND = 1390,           #[USD/kW] unit cost of Wind
-    #                  C_EL = 385,          #[USD/W] unit cost of electrolyser
-    #                  UG_STORAGE_CAPA_MAX = 0,   #maximum available salt caevern size (kg of H2)
-    #                  C_PIPE_STORAGE = 1000, #unit cost of line packing (USD/kg of H2)
-    #                  PIPE_STORAGE_CAPA_MIN = 0, #minimum size of linepacking (kg of H2)
-    #                  C_BAT_ENERGY = 164,        #[USD/kWh] unit cost of battery energy storage
-    #                  C_BAT_POWER = 338,        #[USD/kW] unit cost of battery power capacpity
-    #                  ) 
-    
+    '''
+    # for 2030
+    simparams = dict(EL_ETA = 0.70,       #efficiency of electrolyser
+                      BAT_ETA_in = 0.95,   #charging efficiency of battery
+                      BAT_ETA_out = 0.95,  #discharg efficiency of battery
+                      C_PV = 696,          #[USD/kW] unit cost of PV
+                      C_WIND = 1390,           #[USD/kW] unit cost of Wind
+                      C_EL = 385,          #[USD/W] unit cost of electrolyser
+                      UG_STORAGE_CAPA_MAX = 0,   #maximum available salt caevern size (kg of H2)
+                      C_PIPE_STORAGE = 1000, #unit cost of line packing (USD/kg of H2)
+                      PIPE_STORAGE_CAPA_MIN = 0, #minimum size of linepacking (kg of H2)
+                      C_BAT_ENERGY = 164,        #[USD/kWh] unit cost of battery energy storage
+                      C_BAT_POWER = 338,        #[USD/kW] unit cost of battery power capacpity
+                      OM_EL = 13.475,    # O&M for electrolyzer ($/kw)
+                      OM_PV = 12.70,    # O&M for PV ($/kw)
+                      OM_WIND = 18.65,    # O&M for wind ($/kw)
+                      OM_UG = 1.03,        # O&M for underground storage ($/kg)
+                      DIS_RATE = 0.06        #discount rate 8%
+                      ) 
+    '''
     # # for 2050
     # simparams = dict(EL_ETA = 0.70,       #efficiency of electrolyser
     #                  BAT_ETA_in = 0.95,   #charging efficiency of battery
@@ -90,6 +89,13 @@ def optimisation(Input):
     #                  C_BAT_POWER = 270,        #[USD/kW] unit cost of battery power capacpity
     #                  ) 
     
+    simparams['C_PV'] = Input[0]
+    simparams['C_WIND'] = Input[1]
+    simparams['C_EL'] = Input[2]
+    simparams['OM_PV'] = Input[4]
+    simparams['OM_WIND'] = Input[5]
+    simparams['OM_EL'] = Input[6]
+    simparams['OM_UG'] = simparams['OM_UG'] * Input[3]
     
     #Choose the location
     
@@ -122,7 +128,7 @@ def optimisation(Input):
         print('Start %s %s!'%(Location,Input))
         output = [pool.apply_async(Optimise, args=(load, CF, storage_type, params,random_number,Input[3]))
                    for load in [5]
-                   for CF in [100]#,60,70,80,90,100]
+                   for CF in [100]#50,60,70,80,90,100]
                    for storage_type in ['Lined Rock'] 
                    for params in [simparams]]
         
@@ -174,7 +180,7 @@ def optimisation(Input):
         #RESULTS
         parent_directory = os.path.dirname(os.getcwd())
         path_to_file = parent_directory + os.sep + 'DATA' + os.sep + 'OPT_OUTPUTS' + os.sep 
-        result_file = 'results(%s-UG_windlab)_2020_%s_%s_%s_%s.csv'%(Location,round(Input[0],2),round(Input[1],2),round(Input[2],2),round(Input[3],2))
+        result_file = 'results(%s-UG_windlab)_2020_%s_%s_%s_%s-capex.csv'%(Location,round(Input[0],2),round(Input[1],2),round(Input[2],2),round(Input[3],2))
     
         RESULTS.to_csv(path_to_file+result_file, index=False)
         

@@ -28,6 +28,8 @@ float: OM_EL;    % O&M for electrolyzer ($/kw)
 float: OM_PV;    % O&M for PV ($/kw)
 float: OM_WIND;    % O&M for wind ($/kw)
 float: OM_UG;     % O&M for underground hydrogen storage
+float: crf; %capital recovery factor
+float: H_total; %annual hydrogen generation kg/year
 
 array[tint] of float: LOAD; %load timeseries (kg of H per hour)
 array[tint] of var float: PV_REF_POUT;    %power output from the reference PV plant (kW)
@@ -63,39 +65,25 @@ array[tsamp] of var float: bat_e;  %electrical energy stored in the battery (kWh
 
 var float: capex;
 %var float: fom;
-var float: H_total; %annual hydrogen generation kg/year
 var float: lcoh; % LCOH in USD/kg
 var float: FOM_PV; %USD/kW.year
 var float: FOM_WIND; %USD/kW.year
 var float: FOM_EL; %USD/kW.year
 var float: FOM_UG; %USD/kg.year
 %var float: annuity_factor;
-var float: crf; %capital recovery factor
+var float: OF;
 
-
-capex = C_PV * pv_max + C_WIND * wind_max + C_EL * el_max + C_UG_STORAGE * ug_storage_capa + C_PIPE_STORAGE * pipe_storage_capa + C_BAT_ENERGY * bat_e_capa + C_BAT_POWER * bat_p_max;
-
-
-%lcoh = (capex + FOM_PV + FOM_WIND + FOM_EL + FOM_UG)/H_total;
-
-%annuity_factor =  ( (1-pow(1+DIS_RATE , - n_project)) / DIS_RATE );
-
-crf = DIS_RATE * pow(1+DIS_RATE , n_project)/ ( pow(1+DIS_RATE , n_project) -1);
-
-lcoh = (crf * capex + FOM_PV + FOM_WIND + FOM_EL + FOM_UG)/H_total;
-
-FOM_PV = pv_max * OM_PV;  %* annuity_factor;
-FOM_WIND = wind_max * OM_WIND;  % * annuity_factor; 
-FOM_EL = el_max * OM_EL;  % * annuity_factor; 
-FOM_UG = ug_storage_capa * OM_UG;  % * annuity_factor;
-
-H_total = sum(i in 1..N)(LOAD[i]*3600) - RES_H_CAPA;
-
+OF = (C_PV + OM_PV/crf) * pv_max + (C_WIND + OM_WIND/crf) * wind_max + (C_EL + OM_EL/crf) * el_max + (C_UG_STORAGE + OM_UG/crf) * ug_storage_capa + C_PIPE_STORAGE * pipe_storage_capa + C_BAT_ENERGY * bat_e_capa + C_BAT_POWER * bat_p_max;
 
 %=== CONSTRAINTS ===
-
-%constraint H_total = sum(year_project in N_project) (LOAD[1] *24*365*3600); %/ pow(1.0 + DIS_RATE, year_project)); %discounted hydrogen production
-
+constraint capex = C_PV * pv_max + C_WIND * wind_max + C_EL * el_max + C_UG_STORAGE * ug_storage_capa + C_PIPE_STORAGE * pipe_storage_capa + C_BAT_ENERGY * bat_e_capa + C_BAT_POWER * bat_p_max;
+constraint FOM_PV = pv_max * OM_PV;  %* annuity_factor;
+constraint FOM_WIND = wind_max * OM_WIND;  % * annuity_factor; 
+constraint FOM_EL = el_max * OM_EL;  % * annuity_factor; 
+constraint FOM_UG = ug_storage_capa * OM_UG;  % * annuity_factor;
+constraint lcoh = (crf * capex + FOM_PV + FOM_WIND + FOM_EL + FOM_UG)/H_total;
+%constraint crf = DIS_RATE * pow(1+DIS_RATE , n_project)/ ( pow(1+DIS_RATE , n_project) -1);
+%constraint H_total = sum(i in 1..N)(LOAD[i]*3600) - RES_H_CAPA;
 
 constraint res_h_level[1] = RES_H_CAPA;
 constraint ug_storage_level[1] = ug_storage_level[N];
@@ -162,7 +150,7 @@ constraint forall(  i in tint  )(  res_hout[i] <= LOAD[i]  );
 
 
 
-solve minimize capex;
+solve minimize OF;
 
 output  ["!"] ++
         ["N="] ++ [show(N)] ++ [";"] ++

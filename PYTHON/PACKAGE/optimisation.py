@@ -18,9 +18,11 @@ def make_dzn_file(DT, EL_ETA, BAT_ETA_in, BAT_ETA_out,
                   OM_PV, OM_WIND, OM_EL, OM_UG,
                   CF, PV_REF, PV_REF_POUT, WIND_REF,
                   WIND_REF_POUT, LOAD, DIS_RATE, random):
-
-                      
+    n_project = 25
+    crf = DIS_RATE * (1+DIS_RATE)**n_project/((1+DIS_RATE)**n_project-1)
     # pdb.set_trace()    
+    H_total = (CF/100)*sum(LOAD)*DT*3600
+    
     string = """
     N = %i;
     
@@ -64,14 +66,19 @@ def make_dzn_file(DT, EL_ETA, BAT_ETA_in, BAT_ETA_out,
     
     %% discount rate in absolute value not in percentage
     DIS_RATE = %s;
-
+    
+    %%capital recovery factor
+    crf = %s;
+    
+    %%Hydrogen production
+    H_total = %s;
     
     """ %(len(LOAD), DT, EL_ETA, BAT_ETA_in, BAT_ETA_out,
           C_PV, C_WIND, C_EL, C_UG_STORAGE, UG_STORAGE_CAPA_MAX, C_PIPE_STORAGE,
           PIPE_STORAGE_CAPA_MIN, C_BAT_ENERGY,
           C_BAT_POWER, OM_PV, OM_WIND, OM_EL, OM_UG,
           (1-CF/100)*sum(LOAD)*DT*3600, PV_REF, str(PV_REF_POUT), WIND_REF,
-          str(WIND_REF_POUT), str(LOAD), DIS_RATE  )
+          str(WIND_REF_POUT), str(LOAD), DIS_RATE,crf,H_total )
     
     #filename = optdir + "hydrogen_plant_data_%s.dzn"%(str(CF))
     file_name_new = optdir + "hydrogen_plant_data_%s_%s.dzn"%(str(CF),random)
@@ -123,7 +130,7 @@ def Minizinc(simparams):
     #remove the minizinc data file after running the minizinc model
     
     mzfile = optdir + os.sep + minizinc_data_file_name
-    print (mzfile)
+    
     if os.path.exists(mzfile):
         os.remove(mzfile)
     
