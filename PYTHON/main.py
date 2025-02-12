@@ -13,6 +13,7 @@ from projdirs import datadir #load the path that contains the data files
 from PACKAGE.optimisation import Optimise
 from PACKAGE.component_model import pv_gen, wind_gen, SolarResource, WindSource,WindSource_windlab
 import random
+from joblib import Parallel, delayed
 
 def update_resource_data():
     #Choose the location
@@ -113,93 +114,117 @@ def optimisation(Input,simul_year = 2020):
     # results = Optimise(5, 100, storage_type, simparams)
     
     import multiprocessing as mp
-    
-    for Location in ['Pilbara 2', 'Pilbara 3', 'Pilbara 4', 'Burnie 1', 'Burnie 2', 'Burnie 3', 'Burnie 4',
+    '''
+    'Pilbara 2', 'Pilbara 3', 'Pilbara 4', 'Burnie 1', 'Burnie 2', 'Burnie 3', 'Burnie 4',
                    'Pinjara 1', 'Pinjara 2', 'Pinjara 3', 'Pinjara 4',
                    'Upper Spencer Gulf 1', 'Upper Spencer Gulf 2', 'Upper Spencer Gulf 3', 'Upper Spencer Gulf 4',
-                   'Gladstone 1', 'Gladstone 2', 'Gladstone 3']:
-                
-        random_number = random.random()
-        #Update the weather data files
-        SolarResource(Location,random_number)
-    
-        # # WindSource(Location)
-        WindSource_windlab(Location,random_number)
-        
-        pool = mp.Pool(mp.cpu_count()-2)
-        #print (mp.cpu_count())
-        pool = mp.Pool(mp.cpu_count()-1)
-        print('Start %s %s!'%(Location,Input))
-        output = [pool.apply_async(Optimise, args=(load, CF, storage_type, params,random_number,Input[3]))
-                   for load in [5]
-                   for CF in [50,60,70,80,90,100]
-                   for storage_type in ['Lined Rock'] 
-                   for params in [simparams]]
-        
-        pool.close()
-        pool.join()
-        #print('Completed!')
-        #for i in range(6):
-        #    CF = CF_group[i]
-        #    feedback = Optimise(load=5, cf=CF, storage_type='Salt Cavern', simparams=simparams,random_number=random_number)
-        #    output.append(feedback)
+                   'Gladstone 1', 'Gladstone 2', 'Gladstone 3'
+                   '''
 
-        print('Completed %s %s!'%(Location,Input))
-        
-        RESULTS = pd.DataFrame(columns=['cf','capex[USD]','lcoh[USD/kg]','FOM_PV[USD]',
-                                        'FOM_WIND[USD]','FOM_EL[USD]','FOM_UG[USD]',
-                                        'H_total[kg]','pv_capacity[kW]',
-                                        'wind_capacity[kW]','el_capacity[kW]',
-                                        'ug_capcaity[kgH2]','pipe_storage_capacity[kgH2]',
-                                        'bat_e_capacity[kWh]','bat_p_capacity[kW]',
-                                        'pv_cost[USD]', 'wind_cost[USD]','el_cost[USD]',
-                                        'ug_storage_cost[USD]','pipe_storage_cost[USD]',
-                                   'bat_cost[USD]', 'load[kg/s]'])
-        for i in output:
-            results = i.get()
-            RESULTS = pd.concat([RESULTS, pd.DataFrame([{'cf': results['CF'],
-                                'capex[USD]': results['CAPEX'][0],
-                                'lcoh[USD/kg]': results['lcoh'][0],
-                                'FOM_PV[USD]':results['FOM_PV'][0],
-                                'FOM_WIND[USD]':results['FOM_WIND'][0],
-                                'FOM_EL[USD]':results['FOM_EL'][0],
-                                'FOM_UG[USD]':results['FOM_UG'][0],
-                                'H_total[kg]':results['H_total'][0],
-                                'pv_capacity[kW]': results['pv_max'][0],
-                                'wind_capacity[kW]': results['wind_max'][0],
-                                'el_capacity[kW]': results['el_max'][0],
-                                'ug_capcaity[kgH2]': results['ug_storage_capa'][0],
-                                'pipe_storage_capacity[kgH2]': results['pipe_storage_capa'][0],
-                                'bat_e_capacity[kWh]': results['bat_e_capa'][0],
-                                'bat_p_capacity[kW]': results['bat_p_max'][0],
-                                'pv_cost[USD]': results['pv_max'][0]*simparams['C_PV'],
-                                'wind_cost[USD]': results['wind_max'][0]*simparams['C_WIND'],
-                                'el_cost[USD]': results['el_max'][0]*simparams['C_EL'],
-                                'ug_storage_cost[USD]': results['ug_storage_capa'][0]*results['C_UG_STORAGE'],
-                                'pipe_storage_cost[USD]':results['pipe_storage_capa'][0]*simparams['C_PIPE_STORAGE'],
-                                'bat_cost[USD]': results['bat_p_max'][0]*simparams['C_BAT_ENERGY'],
-                                'load[kg/s]':results['LOAD'][0] }])], ignore_index=True)
+    def run(df):
+        for Location in df['Location']:
+            Location=Location+'_2023'
+            print(Location)
+            random_number = random.random()
+            #Update the weather data files
+            SolarResource(Location,random_number)
+
+            # # WindSource(Location)
+            WindSource_windlab(Location,random_number)
+            Optimise(random_number,Location)
+            '''
+            pool = mp.Pool(mp.cpu_count()-2)
+            #print (mp.cpu_count())
+            pool = mp.Pool(mp.cpu_count()-1)
+            print('Start %s %s!'%(Location,Input))
+            output = [pool.apply_async(Optimise, args=(load, CF, storage_type, params,random_number,Input[3]))
+                       for load in [5]
+                       for CF in [50,60,70,80,90,100]
+                       for storage_type in ['Lined Rock'] 
+                       for params in [simparams]]
             
-            
-        #RESULTS
-        parent_directory = os.path.dirname(os.getcwd())
-        path_to_file = parent_directory + os.sep + 'DATA' + os.sep + 'OPT_OUTPUTS' + os.sep 
-        result_file = 'results(%s-UG_windlab)_%s_%s_%s_%s_%s-lcoh.csv'%(Location,int(simul_year),round(Input[0],2),round(Input[1],2),round(Input[2],2),round(Input[3],2))
+            pool.close()
+            pool.join()
+            #print('Completed!')
+            #for i in range(6):
+            #    CF = CF_group[i]
+            #    feedback = Optimise(load=5, cf=CF, storage_type='Salt Cavern', simparams=simparams,random_number=random_number)
+            #    output.append(feedback)
     
-        RESULTS.to_csv(path_to_file+result_file, index=False)
-        
-        # clean up template weather data
-        dir = datadir + os.sep + 'SAM_INPUTS' + os.sep + 'SOLAR' + os.sep 
-        if os.path.exists(dir + 'SolarSource_%s.csv'%random_number):
-            os.remove(dir + 'SolarSource_%s.csv'%random_number)
+            print('Completed %s %s!'%(Location,Input))
             
-        dir = datadir + os.sep + 'SAM_INPUTS' + os.sep + 'WIND' + os.sep 
-        if os.path.exists(dir + 'WindSource_%s.srw'%random_number):
-            os.remove(dir + 'WindSource_%s.srw'%random_number)
+            RESULTS = pd.DataFrame(columns=['cf','capex[USD]','lcoh[USD/kg]','FOM_PV[USD]',
+                                            'FOM_WIND[USD]','FOM_EL[USD]','FOM_UG[USD]',
+                                            'H_total[kg]','pv_capacity[kW]',
+                                            'wind_capacity[kW]','el_capacity[kW]',
+                                            'ug_capcaity[kgH2]','pipe_storage_capacity[kgH2]',
+                                            'bat_e_capacity[kWh]','bat_p_capacity[kW]',
+                                            'pv_cost[USD]', 'wind_cost[USD]','el_cost[USD]',
+                                            'ug_storage_cost[USD]','pipe_storage_cost[USD]',
+                                       'bat_cost[USD]', 'load[kg/s]'])
+            for i in output:
+                results = i.get()
+                RESULTS = pd.concat([RESULTS, pd.DataFrame([{'cf': results['CF'],
+                                    'capex[USD]': results['CAPEX'][0],
+                                    'lcoh[USD/kg]': results['lcoh'][0],
+                                    'FOM_PV[USD]':results['FOM_PV'][0],
+                                    'FOM_WIND[USD]':results['FOM_WIND'][0],
+                                    'FOM_EL[USD]':results['FOM_EL'][0],
+                                    'FOM_UG[USD]':results['FOM_UG'][0],
+                                    'H_total[kg]':results['H_total'][0],
+                                    'pv_capacity[kW]': results['pv_max'][0],
+                                    'wind_capacity[kW]': results['wind_max'][0],
+                                    'el_capacity[kW]': results['el_max'][0],
+                                    'ug_capcaity[kgH2]': results['ug_storage_capa'][0],
+                                    'pipe_storage_capacity[kgH2]': results['pipe_storage_capa'][0],
+                                    'bat_e_capacity[kWh]': results['bat_e_capa'][0],
+                                    'bat_p_capacity[kW]': results['bat_p_max'][0],
+                                    'pv_cost[USD]': results['pv_max'][0]*simparams['C_PV'],
+                                    'wind_cost[USD]': results['wind_max'][0]*simparams['C_WIND'],
+                                    'el_cost[USD]': results['el_max'][0]*simparams['C_EL'],
+                                    'ug_storage_cost[USD]': results['ug_storage_capa'][0]*results['C_UG_STORAGE'],
+                                    'pipe_storage_cost[USD]':results['pipe_storage_capa'][0]*simparams['C_PIPE_STORAGE'],
+                                    'bat_cost[USD]': results['bat_p_max'][0]*simparams['C_BAT_ENERGY'],
+                                    'load[kg/s]':results['LOAD'][0] }])], ignore_index=True)
+                
+                
+            #RESULTS
+            parent_directory = os.path.dirname(os.getcwd())
+            path_to_file = parent_directory + os.sep + 'DATA' + os.sep + 'OPT_OUTPUTS' + os.sep 
+            result_file = 'results(%s-UG_windlab)_%s_%s_%s_%s_%s-lcoh.csv'%(Location,int(simul_year),round(Input[0],2),round(Input[1],2),round(Input[2],2),round(Input[3],2))
+        
+            RESULTS.to_csv(path_to_file+result_file, index=False)
+            '''
+            # clean up template weather data
+            dir = datadir + os.sep + 'SAM_INPUTS' + os.sep + 'SOLAR' + os.sep
+            if os.path.exists(dir + 'SolarSource_%s.csv'%random_number):
+                os.remove(dir + 'SolarSource_%s.csv'%random_number)
+
+            dir = datadir + os.sep + 'SAM_INPUTS' + os.sep + 'WIND' + os.sep
+            if os.path.exists(dir + 'WindSource_%s.srw'%random_number):
+                os.remove(dir + 'WindSource_%s.srw'%random_number)
+
+    data=pd.read_csv('NEM_WEM.csv', index_col=False)
+
+    #list_of_locations = ['Cell 2127','Cell 1375','Cell 266','Cell 20','Cell 36']  # Use a more descriptive variable name
+    # Function to run MERRA_2 on each row, with added print for core and task
+    def process_row(i):
+        # Select the i-th row
+        df = data.iloc[[i]]
+        df = df.reset_index(drop=True)
+        print(df)
+        run(df)
+        # Call MERRA_2 function with the selected row
+
+    # Use Joblib to run the function in parallel
+    n_jobs = 4  # Set the number of parallel jobs (you can adjust this based on your cores)
+    Parallel(n_jobs=n_jobs)(
+        delayed(process_row)(i) for i in range(len(data))
+    )
 
 if __name__=='__main__':
     #from mpi4py import MPI
-    simul_year = 2050
+    simul_year = 2020
     inputFileName = os.getcwd()+'/input-%s.txt'%simul_year
     f = open( inputFileName )    
     lines = f.readlines()

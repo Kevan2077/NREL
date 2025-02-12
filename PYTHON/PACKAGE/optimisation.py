@@ -9,6 +9,7 @@ import numpy as np
 from PACKAGE.component_model import pv_gen, wind_gen
 import os
 import shutil
+import pandas as pd
 
 def make_dzn_file(DT, EL_ETA, BAT_ETA_in, BAT_ETA_out,
                   C_PV, C_WIND, C_EL, C_UG_STORAGE,UG_STORAGE_CAPA_MAX,
@@ -137,16 +138,18 @@ def Minizinc(simparams):
     
     return(  RESULTS  )
 
-def Optimise(load, cf, storage_type, simparams, random_number,ug_storage_ratio=1):
-    
+def Optimise(random_number, Location):
+    path=os.getcwd()+os.sep+'MERRA2'
     pv_ref = 1e3 #(kW)
     pv_ref_pout = list(np.trunc(100*np.array(pv_gen(pv_ref,random_number)))/100)
-    
+    pv = pd.DataFrame(pv_ref_pout , columns=['Solar'])
+    pv.to_csv(path+os.sep+f'{Location}_PV.csv')
+
     wind_ref = 320e3 #(kW)
     wind_ref_pout = list(np.trunc(100*np.array(wind_gen(random_number)))/100)
-    
-    initial_ug_capa = 110
-    
+    wind = pd.DataFrame(wind_ref_pout , columns=['Wind'])
+    wind.to_csv(path+os.sep+f'{Location}_wind.csv')
+    '''
     simparams.update(DT = 1,#[s] time steps
                      PV_REF = pv_ref, #capacity of reference PV plant (kW)
                      PV_REF_POUT = pv_ref_pout, #power output from reference PV plant (kW)
@@ -172,7 +175,8 @@ def Optimise(load, cf, storage_type, simparams, random_number,ug_storage_ratio=1
     
     results.update(CF=simparams['CF'],
                    C_UG_STORAGE=simparams['C_UG_STORAGE'])
-    return(results)
+    '''
+    return()
     
 def Cost_hs(size,storage_type):
     """
