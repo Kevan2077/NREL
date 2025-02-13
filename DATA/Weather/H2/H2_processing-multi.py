@@ -9,7 +9,6 @@ Created on Wed Jul 19 15:41:16 2023
 import pandas as pd
 import numpy as np
 import os
-plt.rcParams["font.family"] = "Times New Roman"
 fontsize = 14
 import time
 import datetime
@@ -24,8 +23,8 @@ def Resource_data(PV_location_g,Coor_PV_x_g,Coor_PV_y_g):
     raw_data_folder = os.getcwd() + os.sep + location
     #Wind_data = np.array([])
     
-    startyear = 2023
-    endyear = 2023
+    startyear = 2021
+    endyear = 2021
     Year = np.linspace(startyear,endyear,endyear-startyear+1,dtype = int)
     
     for i in range(len(PV_location_g)):
@@ -86,6 +85,6 @@ def Resource_data(PV_location_g,Coor_PV_x_g,Coor_PV_y_g):
 if __name__=='__main__':
     df = pd.read_csv(os.getcwd()+os.sep+'Input_H2.csv')
     Wind_location = PV_location = df['Location'].values
-    Coor_wind_x = Coor_PV_x = df['Lat'].values
-    Coor_wind_y = Coor_PV_y = df['Long'].values
+    Coor_wind_x = Coor_PV_x = df['lat'].values
+    Coor_wind_y = Coor_PV_y = df['lon'].values
     Resource_data(PV_location,Coor_PV_x,Coor_PV_y)

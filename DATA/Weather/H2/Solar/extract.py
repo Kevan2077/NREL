@@ -25,17 +25,14 @@ import datetime
 #Long = np.array([145.25,144.69,144.9,145.1,115.96,115.83,115.98,115.96,136.71,136.56,138,
 #                 138.09,119.44,117.84,119.4,120.1,151.08,150.79,151.05,150.51])
 df = pd.read_csv(os.getcwd() + os.sep + 'Input_H2.csv')
-Lat = df['Lat'].values
-Long = df['Long'].values
+Lat = df['lat'].values
+Long = df['lon'].values
 
-df['Start year'] = 2023
-df['End year'] = 2023
+df['Start year'] = 2021
+df['End year'] = 2021
 
 Startyear = df['Start year'].values
 Endyear = df['End year'].values
-
-print(Startyear)
-print(Endyear)
 
 Token = ['cc8a916709d888182f1a6ead40f6a5d11771524b',
     'f47570af8d4b7fa48b725bd5c5122cfbb7530b82',
@@ -57,8 +54,6 @@ Token = ['cc8a916709d888182f1a6ead40f6a5d11771524b',
     "137250da368eb1e9fcf32bf65e9e228598cb6045",
     "ec02420a0cb4ec0f71f259e975c84ef3ab9db0cd",
     "8f2ade7c7189351526f3d0347378c9dee31ff954"]
-
-
 
 
 max_retries = len(Token)  # Set the maximum retries based on the length of the token list

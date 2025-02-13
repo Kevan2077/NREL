@@ -28,17 +28,14 @@ import datetime
 #Location = np.array(['Worsley Alumina','Cockburn Cement Kwinana','Cockburn Cement Dongara'])
 #df = pd.read_csv(os.getcwd() + os.sep + 'Input_H2.csv')
 df = pd.read_csv(os.getcwd() + os.sep + 'Input_H2.csv')
-Lat = df['Lat'].values
-Long = df['Long'].values
+Lat = df['lat'].values
+Long = df['lon'].values
 
-df['Start year'] = 2024
-df['End year'] = 2024
+df['Start year'] = 2021
+df['End year'] = 2021
 
 Startyear = df['Start year'].values
 Endyear = df['End year'].values
-
-print(Startyear)
-print(Endyear)
 
 #Startyear = 2023
 #Endyear = 2023
@@ -77,58 +74,71 @@ for i in range(len(Lat)):
     end_year = Endyear[i]
     Year = range(start_year, end_year + 1)  # Use range for simplicity
 
-    for year in Year:
-        retries = 0  # Initialize retry counter for each request
+    year=2021
+    file_path = ('%s/Kevan/Raw/%s/Raw_data_%'
+                 's_%s_%s.csv' % (os.getcwd(), year, lat, long, year))
 
-        while retries < max_retries:  # Retry loop
-            token = Token[k]
-            print(lat, long, year, token)
-            api_base = 'https://www.renewables.ninja/api/'
+    # Check if the file exists
+    if os.path.exists(file_path):
+        print("CSV file exists. carry on the next on")
+        continue
+        # Your code to continue processing the CSV file goes here
+    else:
+        print("CSV file does not exist. continue execution.")
+        # Optionally, you can exit the script or handle the absence of the file
 
-            # Send token header with each request
-            s.headers = {'Authorization': 'Token ' + token}
+        for year in Year:
+            retries = 0  # Initialize retry counter for each request
 
-            url = api_base + 'data/wind'
-            args = {
-                'lat': lat,
-                'lon': long,
-                'date_from': '%s-12-31' % str(year - 1),
-                'date_to': '%s-12-31' % str(year),
-                'capacity': 1.0,
-                'height': 150,
-                'turbine': 'Vestas V80 2000',
-                'format': 'json',
-                'raw': True
-            }
+            while retries < max_retries:  # Retry loop
+                token = Token[k]
+                print(lat, long, year, token)
+                api_base = 'https://www.renewables.ninja/api/'
 
-            r = s.get(url, params=args)
+                # Send token header with each request
+                s.headers = {'Authorization': 'Token ' + token}
 
-            if r.status_code == 200:  # If the request is successful
-                try:
-                    parsed_response = json.loads(r.text)
-                    data = pd.read_json(json.dumps(parsed_response['data']), orient='index')
-                    metadata = parsed_response['metadata']
+                url = api_base + 'data/wind'
+                args = {
+                    'lat': lat,
+                    'lon': long,
+                    'date_from': '%s-12-31' % str(year - 1),
+                    'date_to': '%s-12-31' % str(year),
+                    'capacity': 1.0,
+                    'height': 150,
+                    'turbine': 'Vestas V80 2000',
+                    'format': 'json',
+                    'raw': True
+                }
 
-                    # Ensure directory exists
-                    directory = '%s/Kevan/Raw/%s' % (os.getcwd(),year)
-                    if not os.path.exists(directory):
-                        os.makedirs(directory)
+                r = s.get(url, params=args)
 
-                    # Save data to CSV
-                    data.to_csv('%s/Kevan/Raw/%s/Raw_data_%s_%s_%s.csv' % (os.getcwd(), year,lat, long, year), index=False)
-                    print('Done for %s %s %s' % (lat, long, year))
-                    break  # Exit retry loop on success
-                except json.JSONDecodeError:
-                    print(f"Failed to decode JSON response for {lat}, {long}, {year}")
-                    break  # If decoding fails, move to the next year and location
-            else:
-                # If request fails (e.g., 401 Unauthorized), retry with the next token
-                print(f"Error {r.status_code} for {lat}, {long}, {year}: {r.reason}")
-                retries += 1
-                k = (k + 1) % len(Token)  # Move to the next token
+                if r.status_code == 200:  # If the request is successful
+                    try:
+                        parsed_response = json.loads(r.text)
+                        data = pd.read_json(json.dumps(parsed_response['data']), orient='index')
+                        metadata = parsed_response['metadata']
 
-                if retries == max_retries:
-                    print(f"Failed after {max_retries} attempts for {lat}, {long}, {year}")
+                        # Ensure directory exists
+                        directory = '%s/Kevan/Raw/%s' % (os.getcwd(),year)
+                        if not os.path.exists(directory):
+                            os.makedirs(directory)
+
+                        # Save data to CSV
+                        data.to_csv('%s/Kevan/Raw/%s/Raw_data_%s_%s_%s.csv' % (os.getcwd(), year,lat, long, year), index=False)
+                        print('Done for %s %s %s' % (lat, long, year))
+                        break  # Exit retry loop on success
+                    except json.JSONDecodeError:
+                        print(f"Failed to decode JSON response for {lat}, {long}, {year}")
+                        break  # If decoding fails, move to the next year and location
+                else:
+                    # If request fails (e.g., 401 Unauthorized), retry with the next token
+                    print(f"Error {r.status_code} for {lat}, {long}, {year}: {r.reason}")
+                    retries += 1
+                    k = (k + 1) % len(Token)  # Move to the next token
+
+                    if retries == max_retries:
+                        print(f"Failed after {max_retries} attempts for {lat}, {long}, {year}")
 
 
 

@@ -19,11 +19,11 @@ from timezonefinder import TimezoneFinder
 location = 'Kevan'
 casedir = os.getcwd() + os.sep + location
 df = pd.read_csv(os.getcwd() + os.sep + 'Input_H2.csv')
-Lat = df['Lat'].values
-Long = df['Long'].values
+Lat = df['lat'].values
+Long = df['lon'].values
 
-startyear = 2023
-endyear = 2023
+startyear = 2021
+endyear = 2021
 Year = np.linspace(startyear,endyear,endyear-startyear+1,dtype = int)
 #Year = [2014,2017,2019]
 #Year = [2014,2019,2020]
@@ -32,7 +32,7 @@ for i in range(len(Lat)):
     long =Long[i]
     try:
         tz = TimezoneFinder()
-        timezone_str = tz.timezone_at(lat=lat, lng=long)
+        timezone_str = tz.timezone_at(lat=-23.8432, lng=151.2561)  #exchange to AEST
         #timezone_str = tzwhere1.tzNameAt(lat, long)
         timezone1 = pytz.timezone(timezone_str)
         dt = datetime.datetime.now()
@@ -108,8 +108,4 @@ for i in range(len(Lat)):
         directory = '%s/Kevan/Processed/%s/Solar-processed-%s-%s-%s.csv' % (os.getcwd(), year, lat, long, year)
         data.to_csv(directory, index=True)
         print(lat, long, year, 'output successfully!')
-        #data.to_csv('Solar-processed-%s-%s.csv'%(lat,long), index=True)
 
-
-
-      

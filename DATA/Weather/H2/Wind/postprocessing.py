@@ -19,16 +19,14 @@ import pytz
 location = 'Kevan'
 casedir = os.getcwd() + os.sep + location
 df = pd.read_csv(os.getcwd()+os.sep+'Input_H2.csv')
-Lat = df['Lat'].values
-Long = df['Long'].values
+Lat = df['lat'].values
+Long = df['lon'].values
 Location = df['Location'].values
 
-df['Start year'] = 2023
-df['End year'] = 2023
+df['Start year'] = 2021
+df['End year'] = 2021
 Startyear = df['Start year'].values
 Endyear = df['End year'].values
-print(Startyear)
-print(Endyear)
     
 for i in range(len(Lat)):
     lat = Lat[i]
@@ -38,16 +36,17 @@ for i in range(len(Lat)):
     Year = np.linspace(start_year, end_year, end_year - start_year + 1).astype(int)
     try:
         tz = TimezoneFinder()
-        timezone_str = tz.timezone_at(lat=lat, lng=long)
+        timezone_str = tz.timezone_at(lat=-23.8432, lng=151.2561)#exchange to AEST
         #timezone_str = tzwhere1.tzNameAt(lat, long)
         timezone1 = pytz.timezone(timezone_str)
         dt = datetime.datetime.now()
         delta_t = timezone1.utcoffset(dt)
-        
+        print(delta_t)
+
     except:
         print ('Broken')
         delta_t = delta_t
-        
+
     for year in Year:
         location = Location[i]
         # Define the start and end times
@@ -59,6 +58,7 @@ for i in range(len(Lat)):
         start_date = datetime.datetime(year-1, 12, 31, 0, 0, 0)
         end_date = datetime.datetime(year, 12, 31, 23, 0, 0)
         date_range = pd.date_range(start=start_date, end=end_date, freq='h')
+
         #time_duration = pd.Timedelta(hours=10) 
         
         # change UTC to local!!
@@ -91,5 +91,3 @@ for i in range(len(Lat)):
         directory = '%s/Kevan/Processed/%s/Wind_data_%s_%s_%s.csv' % (os.getcwd(), year, lat, long, year)
         data.to_csv(directory)
         print(lat, long, year, 'output successfully!')
-
-      
